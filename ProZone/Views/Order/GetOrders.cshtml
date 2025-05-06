@@ -1,0 +1,95 @@
+﻿@model IEnumerable<Order>
+
+@{
+    ViewData["Title"] = "Your Orders";
+}
+
+<div class="container my-5">
+    <h2 class="fw-bold mb-4 text-center">Your Orders</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">You have no orders yet.</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var order in Model)
+            {
+                <div class="col-12">
+                    <div class="card shadow-sm border-start border-warning border-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Order ID: @order.Id</h5>
+                            <p style="font-weight:800" class="card-text">
+                                <strong >User ID:</strong> @order.UserId <br />
+                                <strong >Total:</strong> @order.TotalAmount EGP <br />
+                                <strong >Status:</strong>
+                                <span class="badge @(order.Status == "Pending" ? "bg-warning text-dark" : order.Status == "Confirmed" ? "bg-success" : order.Status == "Canceled" ? "bg-danger": "bg-secondary")">
+                                    @order.Status
+                                </span><br />
+                                <strong style="font-weight:800">Date:</strong> @order.CreatedAt.ToString("dd MMM yyyy - hh:mm tt")
+                            </p>
+
+                            @if (order.Items != null && order.Items.Any())
+                            {
+                                <div class="mt-4">
+                                    <h6 class="fw-bold">Order Items:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th>Variant</th>
+                                                    <th>Price</th>
+                                                    <th>Quantity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in order.Items)
+                                                {
+                                                    <tr class="table-active">
+                                                        <td>
+                                                            <img src="@Url.Content($"~/Images/{item.Photo}")" alt="Product Image" class="img-thumbnail" style="max-width: 80px;" />
+                                                        </td>
+                                                        <td>@item.SKU</td>
+                                                        <td>@item.Price EGP</td>
+                                                        <td>@item.Quantity</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer d-flex ">
+                            <a asp-action="OrderDetails" asp-route-orderId="@order.Id" class="btn btn-outline-warning">Order Details</a>
+                            <form asp-action="CancelOrder" asp-controller="Order" asp-route-orderId="@order.Id" method="post" onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger"
+                                data-status="@order.Status"
+                                onclick="return handleCancelClick(this)">
+                                    Cancel Order
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+@section Scripts {
+    <script>
+        function handleCancelClick(button) {
+             const status = button.getAttribute("data-status");
+
+             if (status !== "Pending") {
+                 alert("This order cannot be canceled because it is already " + status + ".");
+                 return false; // Prevent form submission
+             }
+
+             return confirm('Are you sure you want to cancel this order?');
+         }
+    </script>
+}

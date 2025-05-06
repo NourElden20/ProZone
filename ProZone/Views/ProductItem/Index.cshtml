@@ -1,0 +1,62 @@
+﻿@model IEnumerable<ProZone.Models.ProductItem>
+
+@{
+    ViewData["Title"] = "List";
+}
+
+<h1 class="mt-4">Variants</h1>
+
+<p>
+    <a asp-action="Create" asp-route-productId="@ViewBag.ProductId" id="createNewLink">Create New</a>
+</p>
+
+<table class="table table-hover">
+    <thead>
+        <tr class="table-dark">
+            <th>
+                Variation Name
+            </th>
+            <th>
+                SKU
+            </th>         
+            <th>
+                Photo
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Stock Quantity
+            </th>
+          
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr class="table-secondary">
+            <td style ="vertical-align: middle;">
+                @Html.DisplayFor(modelItem => item.VariationName)
+            </td>
+                <td style="vertical-align: middle;">
+                @Html.DisplayFor(modelItem => item.SKU)
+            </td>           
+            <td style="vertical-align: middle;">
+                    <img src="@Url.Content($"~/Images/{item.Photo}")" style="max-width: 75px; max-height: 75px; object-fit: contain; border-radius: 25%"/>
+            </td>
+                <td style="vertical-align: middle;">
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+                <td style="vertical-align: middle;">
+                @Html.DisplayFor(modelItem => item.StockQuantity)
+            </td>            
+            <td style="vertical-align: middle;">
+                @Html.ActionLink("Delete", "Delete", new {  id=item.Id  })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+<form>
+    <button asp-action="Products" asp-controller="Product" type="submit" class="btn btn-primary">Back to products</button>
+</form>

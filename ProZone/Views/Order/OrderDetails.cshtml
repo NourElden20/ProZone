@@ -1,0 +1,81 @@
+﻿@model ProZone.Models.Order
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+@Html.AntiForgeryToken()
+
+<div class="container my-5">
+    <h2 class="fw-bold text-center mb-4">Order Details</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title text-primary">Order ID: @Model.Id</h5>
+            <p class="card-text">
+                <strong>User ID:</strong> @Model.UserId <br />
+                <strong>Total Amount:</strong> @Model.TotalAmount EGP <br />
+                <strong>Status:</strong>
+                <span class="badge @(Model.Status == "Pending" ? "bg-warning text-dark" : Model.Status == "Confirmed" ? "bg-success" : Model.Status == "Canceled" ? "bg-danger": "bg-secondary")">
+                    @Model.Status
+                </span><br />
+                <strong>Created At:</strong> @Model.CreatedAt.ToString("dd MMM yyyy - hh:mm tt")
+            </p>
+
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                <h6 class="fw-bold mt-4">Order Items:</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Image</th>
+                                <th>Variant</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr class="table-active">
+                                    <td>
+                                        <img src="@Url.Content($"~/Images/{item.Photo}")" alt="Item Image" class="img-thumbnail" style="max-width: 80px;" />
+                                    </td>
+                                    <td>@item.SKU</td>
+                                    <td>@item.Price EGP</td>
+                                    <td>@item.Quantity</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mt-3">No items found in this order.</p>
+            }
+        </div>
+
+        <div class="card-footer d-flex justify-content-between">
+            <form asp-action="CancelOrder" asp-controller="Order" asp-route-orderId="@Model.Id" method="post" >
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger" data-status="@Model.Status" onclick="return handleCancelClick(this)">Cancel Order</button>
+            </form>
+            <a asp-action="GetOrders" asp-route-userId="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value" class="btn btn-secondary">Back to Orders</a>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function handleCancelClick(button) {
+             const status = button.getAttribute("data-status");
+
+             if (status !== "Pending") {
+                 alert("This order cannot be canceled because it is already " + status + ".");
+                 return false; // Prevent form submission
+             }
+
+             return confirm('Are you sure you want to cancel this order?');
+         }
+    </script>
+}

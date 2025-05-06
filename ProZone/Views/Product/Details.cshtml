@@ -1,0 +1,105 @@
+﻿@model ProZone.Models.Product
+@{
+    ViewData["Title"] = "Product Details";
+}
+@Html.AntiForgeryToken()
+<div class="mt-4"></div>
+<div id="cart-success-message" style="display: none;" class="alert alert-success">Item added to cart!</div>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Left: Product Images -->
+        <div class="col-lg-5 text-center">
+            <div class="border rounded-3 p-3 bg-white">
+                <img id="mainProductImage"
+                     src="@Url.Content($"~/Images/{Model.Photo}")"
+                     alt="@Model.Name.en"
+                     class="img-fluid rounded"
+                     style="max-height: 400px; object-fit: contain;" />
+            </div>
+        </div>
+
+        <!-- Right: Product Details -->
+        <div class="col-lg-7">
+            <h2 class="fw-bold text-dark">@Model.Name.en</h2>
+
+            @if (Model.Category != null)
+            {
+                <span class="badge bg-primary mb-3">@Model.Category.Name.en</span>
+            }
+
+            <p class="text-muted fs-5">@Model.Description?.en</p>
+
+            <h4 class="text-success fw-bold mb-3" id="Price">@Model.MinPrice EGP</h4>
+
+            <p class="text-secondary mb-2">Sold @Model.SoldTimes times</p>
+
+            <!-- Variants as buttons -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                @foreach (var item in ViewBag.ProductItems)
+                {
+                    <button class="btn btn-outline-secondary" 
+                            onclick="changeImage('@Url.Content($"~/Images/{item.Photo}")', @item.Price, '@item.Id')">
+                        @item.VariationName
+                    </button>
+                }
+            </div>
+
+            <!-- Buy/Add to Cart -->
+            <div class="d-flex gap-3 mb-4">
+                <button class="btn btn-success px-4">Buy Now</button>
+                <button class="btn btn-warning px-4" id="addToCartBtn" style="display:none" onclick="addToCart('')">Add to Cart</button>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div>
+                @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-outline-dark me-2" })
+                <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Back to Products</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc" type="button" role="tab">Description</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">Reviews</button>
+                </li>
+            </ul>
+            <div class="tab-content border border-top-0 p-3">
+                <div class="tab-pane fade show active" id="desc" role="tabpanel">@Model.Description?.en</div>
+                <div class="tab-pane fade" id="reviews" role="tabpanel">No reviews yet.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Function to change product image and price
+        function changeImage(imgUrl, price, productItemId) {
+            document.getElementById('mainProductImage').src = imgUrl;
+            document.getElementById('Price').innerText = price + ' EGP';
+            // Set the productItemId dynamically on the Add to Cart button
+            document.getElementById('addToCartBtn').setAttribute('onclick', `addToCart('${productItemId}')`);
+            document.getElementById('addToCartBtn').style.display = "block";
+        }
+
+        // Function to add product to cart
+        function addToCart(productItemId) {
+            fetch('/Cart/AddToCart?productItemId=' + productItemId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
+    </script>
+}

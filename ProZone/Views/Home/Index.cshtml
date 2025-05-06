@@ -1,0 +1,67 @@
+﻿@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "Home Page";
+    var imagePath = ViewBag.path;
+}
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+</head>
+@if (!Model.Any())
+{
+    <div class="alert alert-warning mt-5">
+        <h4 class="alert-heading">No products!</h4>
+        <p class="mb-0">No products were added yet.</p>
+    </div>
+}
+else
+{
+    <div class="row mt-5">
+        @foreach (var product in Model)
+        {
+            <div class="col-lg-4 col-md-6 mb-4">
+                <a class="card border-light text-decoration-none rounded-3 shadow-sm overflow-hidden position-relative" asp-controller="product" asp-action="Details" asp-route-id="@product.Id">
+                    <!-- Card Image -->
+                    <div class="card-body p-0" style="background-image: url('@Url.Content($"~/Images/{product.Photo}")'); background-size: cover; background-position: center; height: 300px;">
+                        <!-- Overlay for text contrast -->
+                        <div class="card-img-overlay d-flex justify-content-center align-items-end p-0">
+                            <span class="badge bg-secondary text-white rounded-0 fs-3 p-2">@product.Category?.Name.en</span>
+                        </div>
+                    </div>
+                    <!-- Card Footer -->
+                    <div class="card-footer d-flex justify-content-between align-items-center bg-light">
+                        <h5 class="mb-0">@product.Name.en</h5>
+                        <span class="badge bg-primary p-2 fs-5">$@product.MinPrice</span> <!-- Assuming there's a Price field -->
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="stars">
+                            (5 Stars)
+
+                            <i class="fa fa-star text-warning"></i>
+                            <i class="fa fa-star text-warning"></i>
+                            <i class="fa fa-star text-warning"></i>
+                            <i class="fa fa-star text-warning"></i>
+                            <i class="fa fa-star text-warning"></i>
+                            <i class="fa fa-star text-warning"></i>
+                            @* @for (var i = 0; i < 5; i++)
+                            {
+                                if (i < Math.Floor(product.Rating))
+                                {
+                                    <i class="fa fa-star text-warning"></i>
+                                }
+                                else if (i < Math.Ceiling(product.Rating))
+                                {
+                                    <i class="fa fa-star-half-alt text-warning"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa fa-star text-muted"></i>
+                                }
+                            } *@
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}

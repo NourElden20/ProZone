@@ -1,0 +1,96 @@
+﻿@model IEnumerable<CartItemWithStock>
+
+@Html.AntiForgeryToken()
+
+<div class="container my-5">
+    <h2 class="fw-bold">Your Cart</h2>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped ">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="align-middle">
+                            <td>
+                                <img src="@Url.Content($"~/Images/{item.CartItem.Photo}")" alt="@item.CartItem.Photo" class="img-fluid" style="max-width: 100px;" />
+                            </td>
+                            <td>@item.CartItem.SKU</td>
+                            <td>@string.Format("{0:N2}", item.CartItem.Price) EGP</td>
+                            <td>
+                                <input type="number" class="form-control quantity-input"
+                                       data-id="@item.CartItem.ProductItemId" value="@item.CartItem.Quantity" min="1" max="@item.StockQuantity" />
+                            </td>
+                            <td>@(item.CartItem.Price * item.CartItem.Quantity) EGP</td>
+                            <td>
+                                <button type="button" class="btn btn-danger delete-btn" data-id="@item.CartItem.ProductItemId">Remove</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <strong>Total: @Model.Sum(i => i.CartItem.Price * i.CartItem.Quantity) EGP</strong>
+            <form asp-action="Create" asp-controller="Order" asp-route-userId="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
+                <button type="submit" class="btn btn-warning">Create Order</button>
+            </form>
+            <form action="/Cart/EmptyCart" method="post">
+                <button type="submit" class="btn btn-warning">Empty Cart</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <p>Your cart is empty.</p>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            document.querySelectorAll(".quantity-input").forEach(input => {
+                input.addEventListener("change", function () {
+                    const id = this.getAttribute("data-id");
+                    const qty = this.value;
+                    fetch(`/Cart/UpdateQuantity?productItemId=${id}&quantity=${qty}`, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        }
+                    })
+                    .then(res => res.ok ? location.reload() : alert("Failed to update quantity."))
+                    .catch(err => console.error("Error:", err));
+                });
+            });
+
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const id = this.getAttribute("data-id");
+                    fetch(`/Cart/DeleteItem?productItemId=${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        }
+                    })
+                    .then(res => res.ok ? location.reload() : alert("Failed to remove item."))
+                    .catch(err => console.error("Error:", err));
+                });
+            });
+        });
+    </script>
+}
